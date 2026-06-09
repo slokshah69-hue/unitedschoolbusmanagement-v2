@@ -1,0 +1,3059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>United School Bus Parking System</title>
+    
+    <!-- Optimized Google Fonts Loading -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@700;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+            font-weight: 700;
+        }
+
+        body {
+            background-color: #0c0d12;
+            background-image: 
+                radial-gradient(circle at 50% 50%, rgba(18, 20, 32, 0.95) 0%, #08090d 100%),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* Bottom padding set to 150px to comfortably fit the terminal */
+            padding: 40px 20px 150px 20px;
+            color: #e2e8f0;
+            overflow-y: auto;
+        }
+
+        .container {
+            display: flex;
+            gap: 30px;
+            width: 100%;
+            max-width: 1850px; /* Expanded max-width to allow layout to cover more screen width */
+            margin: 0 auto;
+            align-items: flex-start;
+        }
+
+        /* PREMIUM GLASSMORPHIC ADMIN PANEL */
+        .admin-panel {
+            background: rgba(15, 17, 26, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 3px solid #facc15;
+            border-radius: 16px;
+            padding: 30px;
+            width: 320px;
+            flex-shrink: 0; /* Prevents panel from shrinking */
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .admin-panel h2 {
+            color: #facc15;
+            margin-bottom: 25px;
+            font-size: 16px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .login-form {
+            display: none;
+        }
+
+        .login-form.show {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .login-form input {
+            width: 100%;
+            padding: 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #facc15;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.25s ease;
+        }
+
+        .login-form input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.06);
+            border-color: #facc15;
+            box-shadow: 0 0 12px rgba(250, 204, 21, 0.25);
+        }
+
+        .login-form input::placeholder {
+            color: #64748b;
+        }
+
+        .login-form button {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #facc15 0%, #eab308 100%);
+            color: #0b0c10;
+            border: none;
+            border-radius: 8px;
+            font-weight: 800;
+            cursor: pointer;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 12px rgba(250, 204, 21, 0.2);
+        }
+
+        .login-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(250, 204, 21, 0.35);
+        }
+
+        .login-form button:active {
+            transform: translateY(1px);
+        }
+
+        .admin-content {
+            display: none;
+        }
+
+        .admin-content.show {
+            display: block;
+        }
+
+        /* TRANSLUCENT ACTIVE BUSES */
+        .bus-list {
+            margin-top: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .bus-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .bus-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 3px;
+        }
+
+        .bus-list::-webkit-scrollbar-thumb {
+            background: rgba(250, 204, 21, 0.2);
+            border-radius: 3px;
+        }
+
+        .bus-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(250, 204, 21, 0.4);
+        }
+
+        .bus-item {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 14px;
+            margin-bottom: 12px;
+            border-left: 4px solid #10B981;
+            border-radius: 8px;
+            font-size: 12px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .bus-item.active {
+            border-left-color: #10B981;
+            background: rgba(16, 185, 129, 0.06);
+        }
+
+        .add-bus-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 25px;
+        }
+
+        .add-bus-form input {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #facc15;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.25s ease;
+        }
+
+        .add-bus-form input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.06);
+            border-color: #facc15;
+            box-shadow: 0 0 10px rgba(250, 204, 21, 0.25);
+        }
+
+        .add-bus-form button {
+            padding: 12px 18px;
+            background: #facc15;
+            color: #0b0c10;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 12px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(250, 204, 21, 0.2);
+        }
+
+        .add-bus-form button:hover {
+            background: #eab308;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 15px rgba(250, 204, 21, 0.35);
+        }
+
+        .logout-btn {
+            width: 100%;
+            margin-top: 15px;
+            padding: 14px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.25s ease;
+        }
+
+        .logout-btn:hover {
+            background: #ef4444;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .clear-all-btn {
+            width: 100%;
+            margin-top: 10px;
+            padding: 14px;
+            background: rgba(202, 138, 4, 0.1);
+            color: #facc15;
+            border: 1px solid rgba(202, 138, 4, 0.3);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.25s ease;
+        }
+
+        .clear-all-btn:hover {
+            background: #ca8a04;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(202, 138, 4, 0.25);
+            transform: translateY(-1px);
+        }
+
+        /* MAP CONTAINER */
+        .map-container {
+            background: rgba(15, 17, 26, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 3px solid #06b6d4; /* Vibrant Cyan top line */
+            border-radius: 16px;
+            padding: 25px; /* Slightly reduced padding to allow map visual expansion */
+            flex: 1;
+            min-width: 0; /* Ensures container scales on any display width */
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+        }
+
+        .map-header {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            min-height: 100px;
+        }
+
+        .compass-holder {
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Responsive logo styling */
+        .school-logo {
+            height: 70px; /* Standard baseline height */
+            width: auto;
+            margin-bottom: 10px; /* Space between logo and subtitle */
+            display: inline-block;
+            vertical-align: middle;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: #a3a3a3;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .map-wrapper {
+            position: relative;
+            background: radial-gradient(circle at center, #0e111a 0%, #06070a 100%);
+            border: 1px solid rgba(6, 182, 212, 0.25); /* Matching subtle Cyan interior border */
+            border-radius: 12px;
+            padding: 10px; /* Reduced inside padding to make screen cover more of the SVG space */
+            margin-bottom: 30px;
+            box-shadow: inset 0 10px 40px rgba(0,0,0,0.9), 0 8px 32px rgba(0,0,0,0.5);
+        }
+
+        svg {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: 90vh; /* Increased vertical limit to utilize vertical screen space better */
+        }
+
+        /* SVG BUILDING STYLING */
+        .building {
+            fill: url(#buildingGrad); /* Gradient mix of dark space blue and dark cyan */
+            stroke: #06b6d4; /* Glowing light blue/cyan solid outline */
+            stroke-width: 2.5;
+            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.4));
+            transition: transform 0.3s ease, filter 0.3s ease, stroke 0.3s ease;
+        }
+
+        .building:hover {
+            fill: url(#buildingHoverGrad); /* Vibrant active blue/cyan hover gradient */
+            stroke: #22d3ee; /* Brighter highlight cyan on hover */
+            stroke-width: 3;
+            filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.4));
+        }
+
+        /* RED ACTIVE GLOW KEYFRAMES */
+        @keyframes red-glow-pulse {
+            0% {
+                stroke-opacity: 0.6;
+                filter: drop-shadow(0 0 2px rgba(255, 0, 0, 0.4));
+            }
+            100% {
+                stroke-opacity: 1;
+                filter: drop-shadow(0 0 12px rgba(255, 0, 0, 0.8));
+            }
+        }
+
+        /* GREEN ACTIVE GLOW KEYFRAMES */
+        @keyframes green-glow-pulse {
+            0% {
+                stroke-opacity: 0.6;
+                filter: drop-shadow(0 0 2px rgba(0, 130, 8, 0.4));
+            }
+            100% {
+                stroke-opacity: 1;
+                filter: drop-shadow(0 0 12px rgba(0, 130, 8, 0.8));
+            }
+        }
+
+        /* BRIGHT YELLOW ACTIVE GLOW KEYFRAMES */
+        @keyframes yellow-glow-pulse {
+            0% {
+                stroke-opacity: 0.6;
+                filter: drop-shadow(0 0 2px rgba(255, 255, 0, 0.4));
+            }
+            100% {
+                stroke-opacity: 1;
+                filter: drop-shadow(0 0 12px rgba(255, 255, 0, 0.8));
+            }
+        }
+
+        /* DASH ROTATION KEYFRAMES */
+        @keyframes march-clockwise {
+            from {
+                stroke-dashoffset: 0;
+            }
+            to {
+                stroke-dashoffset: -24;
+            }
+        }
+
+        @keyframes march-anticlockwise {
+            from {
+                stroke-dashoffset: 0;
+            }
+            to {
+                stroke-dashoffset: 24;
+            }
+        }
+
+        /* High-Contrast Glowing Vacant Slots */
+        .parking-slot, .parking-available {
+            fill: #08090d !important; /* Elegant black background for deep high contrast */
+            stroke: #FF0000 !important; /* Pure high-contrast red dashes */
+            stroke-width: 3.5px !important;
+            stroke-dasharray: 8, 4;
+            transition: stroke 0.3s, fill 0.3s;
+            animation: red-glow-pulse 2s ease-in-out infinite alternate, march-anticlockwise 2.2s linear infinite;
+        }
+
+        /* SVG interactive slot styling */
+        .slot-group {
+            cursor: pointer;
+            user-select: none;
+            -webkit-user-select: none;
+            will-change: transform;
+        }
+
+        /* Set grab handles specifically on active buses */
+        .slot-group rect.parking-emerald, .slot-group rect.parking-broken {
+            cursor: grab;
+        }
+
+        .slot-group:active rect.parking-emerald, .slot-group:active rect.parking-broken {
+            cursor: grabbing;
+        }
+
+        .slot-group:hover rect {
+            stroke: #ffffff;
+            stroke-width: 2.5;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.5));
+        }
+
+        /* High-Contrast Glowing Lime Green Active Slots utilizing #008208 */
+        .parking-emerald {
+            fill: #08090d !important;
+            stroke: #008208 !important; /* High-contrast emerald green border dashes */
+            stroke-width: 3.5px !important;
+            stroke-dasharray: 8, 4;
+            animation: green-glow-pulse 2s ease-in-out infinite alternate, march-clockwise 1.8s linear infinite;
+        }
+
+        /* High-Contrast Glowing Yellow Broken Slots */
+        .parking-broken {
+            fill: #08090d !important;
+            stroke: #ffff00 !important; /* Bright Yellow dashes */
+            stroke-width: 3.5px !important;
+            stroke-dasharray: 8, 4;
+            animation: yellow-glow-pulse 2s ease-in-out infinite alternate, march-anticlockwise 1.8s linear infinite;
+        }
+
+        /* Vacant slot text styling */
+        .slot-text {
+            font-size: 30px !important; /* Maximized inside boxes */
+            fill: #ffff00 !important; /* Bright yellow text for maximum readability */
+            font-weight: 900 !important;
+            text-anchor: middle;
+            dominant-baseline: middle;
+            font-family: 'Roboto', sans-serif;
+            text-shadow: 0px 1.5px 3px rgba(0,0,0,0.85); /* Drop shadow for clear legibility */
+            pointer-events: none;
+        }
+
+        /* Active slot text styling */
+        .slot-text-active {
+            font-size: 26px !important;
+            fill: #ffffff !important; /* Bright white for high contrast */
+            font-weight: 900 !important;
+            text-shadow: 0px 1.5px 3px rgba(0,0,0,0.85);
+            font-family: 'Roboto', sans-serif;
+            pointer-events: none;
+        }
+
+        /* BUILDING TEXT GLOW KEYFRAMES */
+        @keyframes building-glow {
+            0%, 38.61% {
+                fill: #10B981;
+                filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.9));
+            }
+            69.31% {
+                fill: #00ff66;
+                filter: drop-shadow(0 0 15px rgba(0, 255, 102, 0.95)) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.9));
+            }
+            100% {
+                fill: #10B981;
+                filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.9));
+            }
+        }
+
+        /* Building label text styling */
+        .building-text {
+            font-size: 30px !important;
+            fill: #10B981; /* Standardized Emerald Green for consistency */
+            text-anchor: middle;
+            dominant-baseline: middle;
+            font-weight: 900; /* Extremely Bold */
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.9));
+            pointer-events: none;
+            animation: building-glow 2.59s infinite;
+        }
+
+        /* Specialized styles for the right-hand column buildings (34px bold labels) */
+        .right-building-text {
+            font-size: 34px !important;
+            font-weight: 900 !important;
+            fill: #10B981;
+            letter-spacing: 1.5px;
+            filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.9));
+            text-anchor: middle;
+            dominant-baseline: middle;
+            pointer-events: none;
+            animation: building-glow 2.59s infinite;
+        }
+
+        /* Customized typography layout rules to prevent "Transportation" from overflowing */
+        .transportation-text {
+            font-size: 24px !important;
+        }
+
+        .label-text {
+            font-size: 20px !important;
+            fill: #facc15;
+            text-anchor: middle;
+            font-weight: 900;
+            text-transform: uppercase;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.7));
+            pointer-events: none;
+        }
+
+        /* GOOGLE MAPS GPS ANIMATIONS */
+        .gps-pin {
+            transform-origin: 0 0;
+            animation: pin-active-effect 3s ease-in-out infinite;
+        }
+
+        .gps-pulse-circle {
+            fill: rgba(239, 68, 68, 0.15);
+            stroke: #ef4444;
+            stroke-width: 3;
+            pointer-events: none;
+            transform-origin: 810px 580px; /* Aligned vertically to match translated origin point */
+            animation: location-pulse 2s cubic-bezier(0.2, 0.5, 0.3, 1) infinite;
+        }
+
+        .gps-pulse-circle-2 {
+            animation-delay: 1s;
+        }
+
+        /* GPU-OPTIMIZED STATIC GLOWING EFFECT */
+        @keyframes pin-active-effect {
+            0% {
+                transform: scale(0.4);
+                filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+            }
+            50% {
+                transform: scale(0.4);
+                filter: drop-shadow(0 4px 8px rgba(255,0,0,0.8)) brightness(1.8) drop-shadow(0 0 30px #ff0000) drop-shadow(0 0 15px #ff0000);
+            }
+            100% {
+                transform: scale(0.4);
+                filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+            }
+        }
+
+        /* Expanding pulse ripple keyframe translation */
+        @keyframes location-pulse {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.6);
+                opacity: 0;
+            }
+        }
+
+        /* QUICK UTILITIES */
+        .quick-utilities {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .utility-btn {
+            background: rgba(26, 27, 35, 0.9);
+            color: #facc15;
+            border: 1px solid rgba(250, 204, 21, 0.4);
+            padding: 14px 28px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .utility-btn:hover {
+            background: #facc15;
+            color: #0b0c10;
+            border-color: #facc15;
+            box-shadow: 0 0 25px rgba(250, 204, 21, 0.35);
+            transform: translateY(-2px);
+        }
+
+        .utility-btn:active {
+            transform: translateY(0);
+        }
+
+        /* LEGEND */
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            padding: 24px;
+            background: rgba(10, 11, 15, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            margin-top: 25px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 11px;
+            color: #94a3b8;
+            font-weight: bold;
+            letter-spacing: 0.5px;
+        }
+
+        .legend-box {
+            width: 22px;
+            height: 22px;
+            border: 2px solid #333333;
+            border-radius: 5px;
+            flex-shrink: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .legend-box.tbd {
+            background-color: #08090d;
+            border-color: #FF0000;
+        }
+
+        .legend-box.building {
+            background-color: #081b29;
+            border-color: #06b6d4;
+        }
+
+        .legend-box.emerald {
+            background-color: #08090d;
+            border-color: #008208;
+        }
+
+        .legend-box.broken {
+            background-color: #08090d;
+            border-color: #ffff00;
+        }
+
+        /* DIALOG / MODAL STYLING WITH ENTREE ANIMATION */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 4000; /* Increased to layer over LCD screen */
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(5, 5, 8, 0.85);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: #111218;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-top: 3px solid #facc15;
+            border-radius: 16px;
+            padding: 30px;
+            width: 90%;
+            max-width: 420px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7);
+            position: relative;
+            color: #fff;
+            transform: scale(0.9);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #ef4444;
+            transition: color 0.2s, transform 0.2s;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .modal h3 {
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 16px;
+            color: #facc15;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 12px;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .modal-body label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 11px;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .modal-body input {
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 20px;
+            background: rgba(10, 11, 15, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #fff;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.25s ease;
+        }
+
+        .modal-body input:focus {
+            outline: none;
+            border-color: #facc15;
+            box-shadow: 0 0 12px rgba(250, 204, 21, 0.25);
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .modal-actions button {
+            flex: 1;
+            padding: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+            color: #0b0c10;
+        }
+
+        .btn-save:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .btn-broken {
+            background: linear-gradient(135deg, #ffff00 0%, #e6e600 100%);
+            color: #0b0c10;
+        }
+
+        .btn-broken:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(255, 255, 0, 0.3);
+        }
+
+        .btn-replace {
+            background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); /* Vibrant Cyan */
+            color: #0b0c10;
+            font-weight: 800;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            flex: 1;
+            padding: 12px;
+        }
+
+        .btn-replace:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);
+        }
+
+        .btn-clear {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border: 1px solid rgba(239, 68, 68, 0.3) !important;
+        }
+
+        .btn-clear:hover {
+            background: #ef4444;
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.25);
+        }
+
+        /* LCD DISPLAY MODE STYLING */
+        .lcd-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #07080c;
+            z-index: 3000;
+            padding: 30px; /* Reduced padding for maximum layout size */
+            color: #facc15;
+            box-sizing: border-box;
+            overflow: hidden;
+            flex-direction: column;
+        }
+
+        .lcd-overlay.show {
+            display: flex;
+        }
+
+        .lcd-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(250, 204, 21, 0.2);
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .lcd-school-title {
+            font-size: 38px;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 0 2px 8px rgba(255, 255, 255, 0.2);
+            letter-spacing: 3px;
+        }
+
+        .lcd-sub {
+            font-size: 16px;
+            color: #a3a3a3;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .lcd-clock {
+            font-size: 38px;
+            color: #facc15;
+            text-shadow: 0 0 15px rgba(250, 204, 21, 0.6);
+            font-weight: 900;
+            border: 1px solid rgba(250, 204, 21, 0.3); /* Thin, sharp border */
+            background-color: #020204; /* Pure black solid background */
+            padding: 12px 30px;
+            border-radius: 8px;
+            display: inline-block;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        /* MAP ONLY DISPLAY OVERLAY */
+        .map-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #050508;
+            z-index: 3100;
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .map-overlay.show {
+            display: flex;
+        }
+
+        #mapOnlyContainer {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #mapOnlyContainer svg {
+            width: 100%;
+            height: 100%;
+            max-height: 100vh;
+            max-width: 100vw;
+            object-fit: contain;
+            transform: scale(1.05); /* Safe zoom factor prevents clipping at map limits */
+            transform-origin: center center;
+        }
+
+        /* Single-pane full width layout */
+        .lcd-content-layout {
+            display: flex;
+            gap: 25px;
+            flex: 1;
+            min-height: 0;
+            width: 100%;
+        }
+
+        #lcdMapContainer {
+            flex: 1;
+            width: 100%;
+            background: #090a0f;
+            border: none; /* Cyberpunk themed outline disabled inside active LCD viewport for size expansion */
+            border-radius: 12px;
+            padding: 0px; /* Zero padding to stretch SVG fully */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #lcdMapContainer .map-wrapper {
+            background: transparent;
+            border: none;
+            margin-bottom: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #lcdMapContainer svg {
+            width: 100%;
+            height: 100%;
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+        }
+
+        .exit-lcd-btn {
+            align-self: center;
+            margin-top: 25px;
+            background: transparent;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #ef4444;
+            padding: 12px 30px;
+            font-size: 14px;
+            cursor: pointer;
+            text-transform: uppercase;
+            border-radius: 8px;
+            transition: all 0.3s;
+            flex-shrink: 0;
+            z-index: 3600; /* Keep active over click actions */
+            letter-spacing: 1px;
+        }
+
+        .exit-lcd-btn:hover {
+            background: #ef4444;
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        }
+
+        /* WINDOWS TERMINAL CONSOLE STYLING */
+        .windows-terminal {
+            margin: 40px auto 0 auto;
+            width: 100%;
+            max-width: 1850px;
+            background: #090a0f; /* Moon Blue */
+            border: 1px solid rgba(6, 182, 212, 0.25); /* Vibrant Cyan border */
+            border-radius: 12px;
+            box-shadow: 0 20px 45px rgba(0,0,0,0.5), 0 0 20px rgba(6, 182, 212, 0.15);
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            overflow: hidden;
+        }
+
+        .terminal-titlebar {
+            background: #11131e;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            user-select: none;
+        }
+
+        .titlebar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-right: 8px;
+        }
+
+        .window-controls .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .window-controls .dot.close { background-color: #ef4444; opacity: 0.8; }
+        .window-controls .dot.minimize { background-color: #facc15; opacity: 0.8; }
+        .window-controls .dot.maximize { background-color: #10B981; opacity: 0.8; }
+
+        .terminal-logo {
+            width: 16px;
+            height: 16px;
+            object-fit: contain;
+            vertical-align: middle;
+            filter: drop-shadow(0 1px 2px rgba(0,0,0,0.5));
+        }
+
+        .terminal-title {
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+        }
+
+        .terminal-body {
+            padding: 20px;
+            color: #10B981; /* Default text color of terminal body set to Emerald Green */
+            font-size: 14px;
+            line-height: 1.6;
+            height: 250px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background: #090a0f; /* Moon Blue */
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+        }
+
+        .terminal-body::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .terminal-body::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 3px;
+        }
+
+        .terminal-body::-webkit-scrollbar-thumb {
+            background: rgba(16, 185, 129, 0.2);
+            border-radius: 3px;
+        }
+
+        .terminal-body::-webkit-scrollbar-thumb:hover {
+            background: rgba(16, 185, 129, 0.4);
+        }
+
+        .terminal-output {
+            white-space: pre-wrap;
+            word-break: break-all;
+            flex-grow: 1;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+        }
+
+        .terminal-input-line {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .prompt {
+            color: #10B981; /* Prompt color set to Emerald Green */
+            font-weight: bold;
+            white-space: nowrap;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+        }
+
+        .terminal-input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff; /* Active input typing text color set to White */
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
+            font-size: 14px;
+            flex-grow: 1;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* Non-interactive decoration optimization */
+        line, .compass-holder text, .compass-holder circle, .compass-holder path {
+            pointer-events: none;
+        }
+
+        /* Responsive Wraps */
+        @media (max-width: 1250px) {
+            .container {
+                flex-direction: column;
+                align-items: center;
+            }
+            .admin-panel {
+                width: 100%;
+                max-width: 600px;
+            }
+            .map-container {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 1000px) {
+            #lcdMapContainer {
+                height: calc(100vh - 180px);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .map-header {
+                flex-direction: column;
+                min-height: auto;
+                gap: 15px;
+            }
+            .compass-holder {
+                position: static;
+                transform: none;
+            }
+            .lcd-clock {
+                position: static;
+                transform: none;
+                margin-top: 15px;
+            }
+            .lcd-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ADMIN PANEL -->
+        <div class="admin-panel">
+            <h2>🔐 ADMIN PANEL</h2>
+            
+            <div class="login-form show" id="loginForm">
+                <input type="password" id="passwordInput" placeholder="Enter Password" />
+                <button onclick="loginAdmin()">LOGIN</button>
+            </div>
+
+            <div class="admin-content" id="adminContent">
+                <div class="add-bus-form">
+                    <input type="text" id="busSlot" placeholder="Slot (e.g., 7A)" />
+                    <button onclick="addBus()">+ BUS</button>
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <strong style="color: #10B981; font-size: 12px; letter-spacing: 0.5px;">ACTIVE BUSES:</strong>
+                </div>
+
+                <div class="bus-list" id="busList">
+                    <div style="color: #64748b; text-align: center; padding: 20px;">
+                        No buses parked
+                    </div>
+                </div>
+
+                <button class="clear-all-btn" onclick="clearAllBuses()">🧹 CLEAR ALL</button>
+                <button class="logout-btn" onclick="logoutAdmin()">LOGOUT</button>
+            </div>
+
+            <!-- Dynamic Guide Panel detailing the display workflow -->
+            <div style="margin-top: 25px; background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255,255,255,0.06); padding: 18px; border-radius: 12px; font-size: 11px; line-height: 1.6; color: #94a3b8; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);">
+                <span style="color: #06b6d4; font-weight: bold; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px; margin-bottom: 6px;">🖥️ LCD MODE WORKFLOW:</span>
+                <ol style="margin-left: 15px;">
+                    <li>Click <strong>ENTER LCD MODE</strong>.</li>
+                    <li>The display will automatically open in a new tab filling the window viewport (compatible with split tabs).</li>
+                    <li>Click <strong>EXIT LCD DISPLAY</strong> or close the tab to return.</li>
+                </ol>
+            </div>
+        </div>
+
+        <!-- MAP CONTAINER -->
+        <div class="map-container">
+            <div class="map-header">
+                <!-- HIGH-RES NATIVE SVG COMPASS -->
+                <div class="compass-holder">
+                    <svg width="100" height="100" viewBox="-70 -70 140 140" xmlns="http://www.w3.org/2000/svg">
+                        <defs>
+                            <radialGradient id="compassGradHeader" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#2d2d2d" />
+                                <stop offset="100%" stop-color="#151515" />
+                            </radialGradient>
+                            <radialGradient id="centerGradHeader" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#facc15" />
+                                <stop offset="100%" stop-color="#ca8a04" />
+                            </radialGradient>
+                        </defs>
+                        <!-- Outer Base Ring -->
+                        <circle cx="0" cy="0" r="60" fill="url(#compassGradHeader)" stroke="#3e3e3e" stroke-width="4" filter="drop-shadow(0 4px 8px rgba(0,0,0,0.5))"/>
+                        <!-- Inner Trim Ring -->
+                        <circle cx="0" cy="0" r="48" fill="none" stroke="#333333" stroke-width="2"/>
+                        <!-- Direction Coordinates -->
+                        <text x="0" y="-37" fill="#facc15" font-size="14" font-weight="900" text-anchor="middle">N</text>
+                        <text x="0" y="39" fill="#facc15" font-size="14" font-weight="900" text-anchor="middle" dominant-baseline="middle">S</text>
+                        <text x="39" y="1" fill="#facc15" font-size="14" font-weight="900" text-anchor="middle" dominant-baseline="middle">E</text>
+                        <text x="-39" y="1" fill="#facc15" font-size="14" font-weight="900" text-anchor="middle" dominant-baseline="middle">W</text>
+                        <!-- Intermediate Bearings -->
+                        <text x="27" y="-27" fill="#888888" font-size="9" font-weight="900" text-anchor="middle" dominant-baseline="middle">NE</text>
+                        <text x="-27" y="-27" fill="#888888" font-size="9" font-weight="900" text-anchor="middle" dominant-baseline="middle">NW</text>
+                        <text x="27" y="29" fill="#888888" font-size="9" font-weight="900" text-anchor="middle" dominant-baseline="middle">SE</text>
+                        <text x="-27" y="29" fill="#888888" font-size="9" font-weight="900" text-anchor="middle" dominant-baseline="middle">SW</text>
+                        <!-- Rotating Dial / Needle -->
+                        <g transform="rotate(15)">
+                            <!-- Red North Pointer -->
+                            <path d="M 0,0 L -5,-8 L 0,-42 L 5,-8 Z" fill="#ef4444" filter="drop-shadow(0 2px 3px rgba(0,0,0,0.4))"/>
+                            <!-- Silver South Pointer -->
+                            <path d="M 0,0 L -5,8 L 0,42 L 5,8 Z" fill="#e2e8f0" filter="drop-shadow(0 -2px 3px rgba(0,0,0,0.4))"/>
+                        </g>
+                        <!-- Center Cap -->
+                        <circle cx="0" cy="0" r="6" fill="url(#centerGradHeader)" filter="drop-shadow(0 1px 3px rgba(0,0,0,0.5))"/>
+                    </svg>
+                </div>
+                <div style="text-align: center;">
+                    <!-- UNITED SCHOOL LOGO IMAGE -->
+                    <img class="school-logo" src="logo.png" alt="United School Logo" width="100" height="70" />
+                    <div class="subtitle">United School Bus Parking System</div>
+                </div>
+            </div>
+
+            <!-- QUICK UTILITIES BAR -->
+            <div class="quick-utilities">
+                <button class="utility-btn" onclick="openLcdModeTab()">📺 ENTER LCD MODE</button>
+            </div>
+
+            <div class="map-wrapper" id="mapWrapper">
+                <!-- SVG width boundary dynamically scaled -->
+                <svg viewBox="0 0 2160 800" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="buildingGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#081b29" />
+                            <stop offset="50%" stop-color="#0b2c4d" />
+                            <stop offset="100%" stop-color="#0a3c5f" />
+                        </linearGradient>
+                        <linearGradient id="buildingHoverGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#0e3d66" />
+                            <stop offset="100%" stop-color="#00f2fe" />
+                        </linearGradient>
+                    </defs>
+
+                    <!-- BUILDINGS -->
+                    
+                    <!-- Kanchanjunga -->
+                    <rect class="building" x="20" y="35" width="720" height="60" rx="12"/>
+                    <text class="building-text" x="380" y="68" style="font-size: 36px !important;">KANCHANJUNGA</text>
+                    
+                    <!-- Cho-oyu -->
+                    <rect class="building" x="20" y="155" width="110" height="338" rx="12"/>
+                    <text class="building-text" x="75" y="324" transform="rotate(-90 75 324)" style="font-size: 34px !important;">CHO OYU</text>
+                    
+                    <!-- Lotse -->
+                    <rect class="building" x="800" y="35" width="90" height="215" rx="12"/>
+                    <text class="building-text" x="845" y="142.5" transform="rotate(-90 845 142.5)" style="font-size: 32px !important;">LOTSE</text>
+                    
+                    <!-- Makalu -->
+                    <rect class="building" x="905" y="35" width="90" height="215" rx="12"/>
+                    <text class="building-text" x="950" y="142.5" transform="rotate(-90 950 142.5)" style="font-size: 32px !important;">MAKALU</text>
+                    
+                    <!-- Tiffin Area -->
+                    <rect class="building" x="800" y="265" width="195" height="70" rx="12"/>
+                    <text class="building-text" x="897.5" y="303" style="font-size: 26px !important;">TIFFIN AREA</text>
+                    
+                    <!-- LCD Display Block -->
+                    <rect class="building" x="800" y="350" width="195" height="40" rx="6" style="stroke: #ef4444; stroke-width: 3; fill: #111111;"/>
+                    <text class="building-text" x="897.5" y="375" style="font-size: 15px !important; font-weight: 900; letter-spacing: 1px;">LCD DISPLAY</text>
+
+                    <!-- Carpenter -->
+                    <rect class="building" x="1835" y="35" width="305" height="100" rx="12"/>
+                    <text class="building-text right-building-text" x="1987" y="85">CARPENTER</text>
+                    
+                    <!-- Girls Hostel -->
+                    <rect class="building" x="1835" y="175" width="305" height="100" rx="12"/>
+                    <text class="building-text right-building-text" x="1987" y="225">GIRLS HOSTEL</text>
+                    
+                    <!-- Waste -->
+                    <rect class="building" x="1835" y="315" width="305" height="100" rx="10"/>
+                    <text class="building-text right-building-text" x="1987" y="365">WASTE</text>
+                    
+                    <!-- Transportation Office -->
+                    <rect class="building" x="1835" y="455" width="305" height="120" rx="12"/>
+                    <text class="building-text right-building-text" x="1987" y="515">
+                        <tspan class="transportation-text" x="1987" dy="-12" textLength="285" lengthAdjust="spacingAndGlyphs">TRANSPORTATION</tspan>
+                        <tspan x="1987" dy="36">OFFICE</tspan>
+                    </text>
+                    
+                    <!-- Futsal -->
+                    <rect class="building" x="1080" y="575" width="580" height="135" rx="15"/>
+                    <text class="building-text" x="1370" y="642.5" style="font-size: 38px !important;">FUTSAL</text>
+                    
+                    <!-- ECA -->
+                    <rect class="building" x="1320" y="725" width="100" height="65" rx="12"/>
+                    <text class="building-text" x="1370" y="757" style="font-size: 28px !important;">ECA</text>
+                    
+                    <!-- Daulagiri -->
+                    <rect class="building" x="870" y="635" width="180" height="150" rx="12"/>
+                    <text class="building-text" x="960" y="710" textLength="155" lengthAdjust="spacingAndGlyphs" style="font-size: 24px !important; font-weight: 900;">DAULAGIRI</text>
+                    
+                    <!-- Sagarmatha -->
+                    <rect class="building" x="510" y="635" width="240" height="150" rx="15"/>
+                    <text class="building-text" x="630" y="710" textLength="210" lengthAdjust="spacingAndGlyphs" style="font-size: 26px !important; font-weight: 900;">SAGARMATHA</text>
+                    
+                    <!-- T.T -->
+                    <rect class="building" x="420" y="635" width="70" height="150" rx="10"/>
+                    <text class="building-text" x="455" y="710" transform="rotate(-90 455 710)" style="font-size: 30px !important;">T.T</text>
+                    
+                    <!-- Gate 2 Lane Markers -->
+                    <line x1="20" y1="520" x2="400" y2="520" stroke="#facc15" stroke-width="4"/>
+                    <line x1="20" y1="590" x2="400" y2="590" stroke="#facc15" stroke-width="4"/>
+                    <text class="label-text" x="210" y="560">GATE2</text>
+                    <path d="M 142.5,555 L 52.5,555 M 67.5,540 L 52.5,555 L 67.5,570" fill="none" stroke="#facc15" stroke-width="5" stroke-linecap="round"/>
+                    
+                    <!-- Flower -->
+                    <rect class="building" x="180" y="635" width="220" height="50" rx="8"/>
+                    <text class="building-text" x="290" y="662" style="font-size: 24px !important;">FLOWER</text>
+                    
+                    <!-- Tiffin -->
+                    <rect class="building" x="20" y="635" width="140" height="50" rx="8"/>
+                    <text class="building-text" x="90" y="662" style="font-size: 24px !important;">TIFFIN</text>
+                    
+                    <!-- Lane / Gate 1 Markers -->
+                    <line x1="770" y1="605" x2="770" y2="780" stroke="#facc15" stroke-width="4"/>
+                    <line x1="850" y1="605" x2="850" y2="780" stroke="#facc15" stroke-width="4"/>
+                    <text class="label-text" x="810" y="750">GATE1</text>
+                    <path d="M 810,625 L 810,705 M 800,685 L 810,705 L 820,685" fill="none" stroke="#facc15" stroke-width="5" stroke-linecap="round"/>
+                    
+                    <!-- Lane / Exit Gate Markers -->
+                    <line x1="1440" y1="730" x2="1600" y2="730" stroke="#facc15" stroke-width="4"/>
+                    <line x1="1440" y1="790" x2="1600" y2="790" stroke="#facc15" stroke-width="4"/>
+                    <path d="M 1470,760 L 1570,760 M 1550,745 L 1570,760 L 1550,775" fill="none" stroke="#facc15" stroke-width="5" stroke-linecap="round"/>
+                    
+                    <!-- PARKING GRID - LEFT -->
+                    <!-- Row 1 -->
+                    <g class="slot-group" data-slot-id="slot_top_1" data-default-label="TBD">
+                        <rect class="parking-slot" x="140" y="155" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="205" y="184">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_top_2" data-default-label="TBD">
+                        <rect class="parking-slot" x="280" y="155" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="345" y="184">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_top_3" data-default-label="TBD">
+                        <rect class="parking-slot" x="420" y="155" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="485" y="184">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_top_4" data-default-label="TBD">
+                        <rect class="parking-slot" x="560" y="155" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="625" y="184">TBD</text>
+                    </g>
+                    
+                    <!-- Row 2 -->
+                    <g class="slot-group" data-slot-id="slot_if" data-default-label="IF">
+                        <rect class="parking-available" x="140" y="225" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="205" y="254">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_top_7" data-default-label="TBD">
+                        <rect class="parking-slot" x="280" y="225" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="345" y="254">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_dm" data-default-label="DM">
+                        <rect class="parking-available" x="420" y="225" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="485" y="254">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_top_9" data-default-label="TBD">
+                        <rect class="parking-slot" x="560" y="225" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="625" y="254">TBD</text>
+                    </g>
+                    
+                    <!-- Row 3 -->
+                    <g class="slot-group" data-slot-id="slot_top_11" data-default-label="TBD">
+                        <rect class="parking-slot" x="140" y="295" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="205" y="324">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_top_12" data-default-label="TBD">
+                        <rect class="parking-slot" x="280" y="295" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="345" y="324">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_top_13" data-default-label="TBD">
+                        <rect class="parking-slot" x="420" y="295" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="485" y="324">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_3a" data-default-label="3A">
+                        <rect class="parking-available" x="560" y="295" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="625" y="324">TBD</text>
+                    </g>
+                    
+                    <!-- Row 4 -->
+                    <g class="slot-group" data-slot-id="slot_3a2" data-default-label="3A">
+                        <rect class="parking-available" x="140" y="365" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="205" y="394">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_5g" data-default-label="5G">
+                        <rect class="parking-available" x="280" y="365" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="345" y="394">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_row4_3" data-default-label="TBD">
+                        <rect class="parking-slot" x="420" y="365" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="485" y="394">TBD</text>
+                    </g>
+
+                    <!-- Side Stacked Slots -->
+                    <g class="slot-group" data-slot-id="slot_if2" data-default-label="IF">
+                        <rect class="parking-available" x="705" y="240" width="75" height="130" rx="4"/>
+                        <text class="slot-text" x="742.5" y="305" transform="rotate(-90 742.5 305)">TBD</text>
+                    </g>
+
+                    <!-- Row 5 -->
+                    <g class="slot-group" data-slot-id="slot_row5_1" data-default-label="TBD">
+                        <rect class="parking-slot" x="140" y="435" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="205" y="464">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_row5_2" data-default-label="TBD">
+                        <rect class="parking-slot" x="280" y="435" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="345" y="464">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_row5_3" data-default-label="TBD">
+                        <rect class="parking-slot" x="420" y="435" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="485" y="464">TBD</text>
+                    </g>
+
+                    <!-- MIDDLE CENTER "YOU ARE HERE" & LOWER ROW OF 3 BOXES -->
+                    <g class="slot-group" data-slot-id="slot_mid_left" data-default-label="TBD">
+                        <rect class="parking-slot" x="560" y="435" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="625" y="464">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_mid_mid" data-default-label="TBD">
+                        <rect class="parking-slot" x="705" y="435" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="770" y="464">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_41" data-default-label="TBD">
+                        <rect class="parking-slot" x="850" y="435" width="130" height="58" rx="4"/>
+                        <text class="slot-text" x="915" y="464">TBD</text>
+                    </g>
+
+                    <!-- "YOU ARE HERE!" Locator Box & Animated Red Map Pin Group -->
+                    <g id="you-are-here-group">
+                        <!-- Google Location Pulsing Concentric Ripple Rings (Centered at adjusted tip coordinates: 810, 580) -->
+                        <circle class="gps-pulse-circle" cx="810" cy="580" r="50" />
+                        <circle class="gps-pulse-circle gps-pulse-circle-2" cx="810" cy="580" r="50" />
+
+                        <!-- Outer group positions the tip exactly at 810, 580 -->
+                        <g transform="translate(810, 580)">
+                            <!-- Inner group glows around its local (0,0) tip -->
+                            <g class="gps-pin" filter="drop-shadow(0 4px 8px rgba(0,0,0,0.6))">
+                                <defs>
+                                    <radialGradient id="red3D" cx="40%" cy="30%" r="70%">
+                                        <stop offset="0%" stop-color="#ff6b6b" />
+                                        <stop offset="60%" stop-color="#e61e1e" />
+                                        <stop offset="100%" stop-color="#800000" />
+                                    </radialGradient>
+                                    <linearGradient id="innerRim" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stop-color="#4d0000" />
+                                        <stop offset="100%" stop-color="#ff4d4d" />
+                                    </linearGradient>
+                                </defs>
+                                <!-- 3D Perspective Rim Shadow -->
+                                <path d="M 0,0 
+                                        C -35,-40 -55,-75 -55,-110 
+                                        C -55,-145 -25,-175 10,-175 
+                                        C 45,-175 75,-145 75,-110 
+                                        C 75,-75 55,-40 20,-5
+                                        L 0,0 Z" 
+                                    fill="#660000" transform="translate(-4, 3)"/>
+                                <!-- Front Glossy Teardrop Face -->
+                                <path d="M 0,0 
+                                        C -35,-40 -55,-75 -55,-110 
+                                        C -55,-145 -25,-175 10,-175 
+                                        C 45,-175 75,-145 75,-110 
+                                        C 75,-75 55,-40 20,-5
+                                        L 0,0 Z" 
+                                    fill="url(#red3D)" stroke="#990000" stroke-width="2"/>
+                                <!-- Hole Inner Shadow Depth -->
+                                <circle cx="10" cy="-110" r="30" fill="url(#innerRim)" />
+                                <!-- Center Hole Background (Set to transparent fill) -->
+                                <circle cx="12" cy="-108" r="26" fill="none" />
+                                <!-- Curved Glossy Reflection Light Highlights -->
+                                <path d="M -35,-120 C -30,-145 -10,-160 15,-160 C 25,-160 35,-155 40,-148 C 25,-155 5,-150 -15,-135 C -28,-122 -32,-110 -32,-100 C -35,-106 -35,-113 -35,-120 Z" fill="#ffffff" opacity="0.5" />
+                            </g>
+                        </g>
+
+                        <!-- Indicator Box Aligned below the adjusted pin tip -->
+                        <rect x="717.5" y="585" width="185" height="34" rx="8" style="stroke: #ef4444; stroke-width: 2.5; fill: #0d0d0d; filter: drop-shadow(0 0 8px rgba(239, 68, 68, 0.4));"/>
+                        <text class="building-text" x="810" y="602" style="font-size: 14px !important; fill: #ef4444; font-weight: 900; letter-spacing: 1px;">YOU ARE HERE!</text>
+                    </g>
+
+                    <!-- MASSIVE CENTER/RIGHT GRID (6 Columns x 5 Rows) -->
+                    <!-- COLUMN 0 -->
+                    <g class="slot-group" data-slot-id="slot_red_line_1" data-default-label="TBD">
+                        <rect class="parking-slot" x="1010" y="35" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1071" y="62.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_red_line_2" data-default-label="TBD">
+                        <rect class="parking-slot" x="1010" y="102" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1071" y="129.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_red_line_3" data-default-label="TBD">
+                        <rect class="parking-slot" x="1010" y="169" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1071" y="196.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_red_line_4" data-default-label="TBD">
+                        <rect class="parking-slot" x="1010" y="236" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1071" y="263.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_red_line_5" data-default-label="TBD">
+                        <rect class="parking-slot" x="1010" y="303" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1071" y="330.5">TBD</text>
+                    </g>
+
+                    <!-- Col 1 -->
+                    <g class="slot-group" data-slot-id="slot_top_r1_c2" data-default-label="TBD">
+                        <rect class="parking-slot" x="1140" y="35" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1201" y="62.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_6" data-default-label="TBD">
+                        <rect class="parking-slot" x="1140" y="102" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1201" y="129.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_12" data-default-label="TBD">
+                        <rect class="parking-slot" x="1140" y="169" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1201" y="196.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_18" data-default-label="TBD">
+                        <rect class="parking-slot" x="1140" y="236" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1201" y="263.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_24" data-default-label="TBD">
+                        <rect class="parking-slot" x="1140" y="303" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1201" y="330.5">TBD</text>
+                    </g>
+
+                    <!-- Col 2 -->
+                    <g class="slot-group" data-slot-id="slot_top_r1_c3" data-default-label="TBD">
+                        <rect class="parking-slot" x="1270" y="35" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1331" y="62.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_7" data-default-label="TBD">
+                        <rect class="parking-slot" x="1270" y="102" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1331" y="129.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_13" data-default-label="TBD">
+                        <rect class="parking-slot" x="1270" y="169" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1331" y="196.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_19" data-default-label="TBD">
+                        <rect class="parking-slot" x="1270" y="236" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1331" y="263.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_43t" data-default-label="43T">
+                        <rect class="parking-available" x="1270" y="303" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1331" y="330.5">TBD</text>
+                    </g>
+
+                    <!-- Col 3 -->
+                    <g class="slot-group" data-slot-id="slot_top_r1_c4" data-default-label="TBD">
+                        <rect class="parking-slot" x="1400" y="35" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1461" y="62.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_8" data-default-label="TBD">
+                        <rect class="parking-slot" x="1400" y="102" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1461" y="129.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_14" data-default-label="TBD">
+                        <rect class="parking-slot" x="1400" y="169" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1461" y="196.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_3a4" data-default-label="3A">
+                        <rect class="parking-available" x="1400" y="236" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1461" y="263.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_26" data-default-label="TBD">
+                        <rect class="parking-slot" x="1400" y="303" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1461" y="330.5">TBD</text>
+                    </g>
+
+                    <!-- Col 4 -->
+                    <g class="slot-group" data-slot-id="slot_top_r1_c5" data-default-label="TBD">
+                        <rect class="parking-slot" x="1530" y="35" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1591" y="62.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bdjjt" data-default-label="BDJJT">
+                        <rect class="parking-available" x="1530" y="102" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1591" y="129.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_11c" data-default-label="11C">
+                        <rect class="parking-available" x="1530" y="169" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1591" y="196.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_21" data-default-label="TBD">
+                        <rect class="parking-slot" x="1530" y="236" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1591" y="263.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_99t" data-default-label="99T">
+                        <rect class="parking-available" x="1530" y="303" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1591" y="330.5">TBD</text>
+                    </g>
+
+                    <!-- Col 5 -->
+                    <g class="slot-group" data-slot-id="slot_top_r1_c6" data-default-label="TBD">
+                        <rect class="parking-slot" x="1660" y="35" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1721" y="62.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_10" data-default-label="TBD">
+                        <rect class="parking-slot" x="1660" y="102" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1721" y="129.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_16" data-default-label="TBD">
+                        <rect class="parking-slot" x="1660" y="169" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1721" y="196.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_22" data-default-label="TBD">
+                        <rect class="parking-slot" x="1660" y="236" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1721" y="263.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_28" data-default-label="TBD">
+                        <rect class="parking-slot" x="1660" y="303" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1721" y="330.5">TBD</text>
+                    </g>
+
+                    <!-- Row 6 -->
+                    <g class="slot-group" data-slot-id="slot_bot_r6_c1" data-default-label="TBD">
+                        <rect class="parking-slot" x="1010" y="370" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1071" y="397.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_r6_c2" data-default-label="TBD">
+                        <rect class="parking-slot" x="1140" y="370" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1201" y="397.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_r6_c3" data-default-label="TBD">
+                        <rect class="parking-slot" x="1270" y="370" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1331" y="397.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_r6_c4" data-default-label="TBD">
+                        <rect class="parking-slot" x="1400" y="370" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1461" y="397.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_r6_c5" data-default-label="TBD">
+                        <rect class="parking-slot" x="1530" y="370" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1591" y="397.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_r6_c6" data-default-label="TBD">
+                        <rect class="parking-slot" x="1660" y="370" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1721" y="397.5">TBD</text>
+                    </g>
+
+                    <!-- Row 7 -->
+                    <g class="slot-group" data-slot-id="slot_bot_r7_c4" data-default-label="TBD">
+                        <rect class="parking-slot" x="1400" y="437" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1461" y="464.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_r7_c5" data-default-label="TBD">
+                        <rect class="parking-slot" x="1530" y="437" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1591" y="464.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_r7_c6" data-default-label="TBD">
+                        <rect class="parking-slot" x="1660" y="437" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1721" y="464.5">TBD</text>
+                    </g>
+
+                    <!-- Row 8 -->
+                    <g class="slot-group" data-slot-id="slot_bot_r8_c4" data-default-label="TBD">
+                        <rect class="parking-slot" x="1400" y="504" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1461" y="531.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_r8_c5" data-default-label="TBD">
+                        <rect class="parking-slot" x="1530" y="504" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1591" y="531.5">TBD</text>
+                    </g>
+                    <g class="slot-group" data-slot-id="slot_bot_r8_c6" data-default-label="TBD">
+                        <rect class="parking-slot" x="1660" y="504" width="122" height="55" rx="4"/>
+                        <text class="slot-text" x="1721" y="531.5">TBD</text>
+                    </g>
+                </svg>
+            </div>
+
+            <!-- LEGEND -->
+            <div class="legend" id="legendContainer">
+                <div class="legend-item">
+                    <div class="legend-box tbd"></div>
+                    <span>TBD - VACANT SLOT (ROTATING RED)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box building"></div>
+                    <span>BUILDINGS / AREAS</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box emerald"></div>
+                    <span>BUS ACTIVE (ROTATING GREEN)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-box broken"></div>
+                    <span>REPAIR / BROKEN (ROTATING YELLOW)</span>
+                </div>
+                <div class="legend-item" style="grid-column: 1 / -1;">
+                    <span style="color: #facc15; text-align: center; width: 100%; font-size: 11px; letter-spacing: 0.5px;">⚙ CLICK OR DRAG ANY PARKING GRID TO VIEW DETAILS / SHIFT BUSES</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WINDOWS TERMINAL CONSOLE -->
+    <div class="windows-terminal">
+        <div class="terminal-titlebar">
+            <div class="titlebar-left">
+                <div class="window-controls">
+                    <span class="dot close"></span>
+                    <span class="dot minimize"></span>
+                    <span class="dot maximize"></span>
+                </div>
+                <img class="terminal-logo" src="logo.png" alt="School Logo" width="16" height="16" />
+                <span class="terminal-title">United School Bus Management</span>
+            </div>
+        </div>
+        <div class="terminal-body">
+            <div class="terminal-output" id="terminalOutput">United School Bus Management System [Version 1.0.0]
+Enter password to access the system console:
+</div>
+            <div class="terminal-input-line">
+                <span class="prompt" id="terminalPrompt">Password:</span>
+                <input type="password" id="terminalInput" class="terminal-input" placeholder="Enter terminal password..." autofocus autocomplete="off" />
+            </div>
+        </div>
+    </div>
+
+    <!-- ARRIVAL & DEPARTURE MANAGEMENT MODAL -->
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeBookingModal()">&times;</span>
+            <h3>🚌 SLOT <span id="modalSlotTitle"></span></h3>
+            <div class="modal-body">
+                <div style="margin-bottom:15px; font-size:12px; color:#10B981;" id="modalSlotStatus"></div>
+                
+                <label for="modalBusName">Bus Label / Name</label>
+                <input type="text" id="modalBusName" placeholder="Enter Bus Identifier" />
+                
+                <div class="modal-actions" id="modalAdminActions" style="display: flex; flex-direction: column; gap: 10px; margin-top: 15px;">
+                    <div style="display: flex; gap: 10px; width: 100%;">
+                        <button class="btn-save" onclick="saveSlotBooking(false)">Save & Park</button>
+                        <button class="btn-broken" onclick="saveSlotBooking(true)">Save as Broken</button>
+                    </div>
+                    <div style="display: flex; gap: 10px; width: 100%;">
+                        <button class="btn-replace" id="btnReplaceBus" onclick="replaceBrokenBus()" style="display: none;">Replace Bus</button>
+                        <button class="btn-clear" onclick="clearSlotBooking()" style="flex: 1;">Depart Bus</button>
+                    </div>
+                </div>
+                <div id="modalGuestMessage" style="color: #ca8a04; text-align: center; font-size: 12px; margin-top: 10px; display: none;">
+                    <div style="margin-bottom: 12px;">🔓 LOGIN TO THE ADMIN PANEL TO EDIT THIS SLOT</div>
+                    <div style="display: flex; gap: 8px; justify-content: center; align-items: center; margin-top: 8px;">
+                        <input type="password" id="modalPasswordInput" placeholder="Password" style="margin-bottom: 0; padding: 8px; width: 140px; background: #0f0f0f; border: 2px solid #3a3a3a; color: #fff; border-radius: 6px; font-size: 12px;" />
+                        <button onclick="loginAdminFromModal()" style="padding: 8px 12px; background: #facc15; color: #121212; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 12px; text-transform: uppercase;">LOGIN</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LCD DISPLAY OVERLAY -->
+    <div id="lcdOverlay" class="lcd-overlay">
+        <div class="lcd-header">
+            <div>
+                <img class="school-logo" style="height: 60px; margin-bottom: 5px;" src="logo.png" alt="United School Logo" width="60" height="60" />
+                <br>
+                <span class="lcd-sub">United School Bus Parking System</span>
+            </div>
+            <div id="lcdClock" class="lcd-clock">00:00:00 AM</div>
+        </div>
+
+        <div class="lcd-content-layout">
+            <!-- Left Side: Interactive Campus Map container -->
+            <div id="lcdMapContainer"></div>
+        </div>
+
+        <button class="exit-lcd-btn" onclick="exitLcdMode()">✕ EXIT LCD DISPLAY</button>
+    </div>
+
+    <!-- MAP ONLY DISPLAY OVERLAY -->
+    <div id="mapOverlay" class="map-overlay">
+        <div id="mapOnlyContainer"></div>
+    </div>
+
+    <script>
+        let isLoggedIn = false;
+        const CORRECT_PASSWORD = "2356"; // Panel Password set to 2356
+        
+        const busDatabase = {};
+        let replacementHistory = []; // Master list tracking replacement transactions
+        let activeSelectedSlotId = null;
+        let lcdTimer = null;
+        let isLcdMode = false; // Tracks if HDMI / LCD display overlay is active on this tab/window
+        let isMapMode = false; // Tracks if standalone Map-Only display overlay is active on this tab/window
+        let isTerminalAuthorized = false; // Tracks terminal lock status
+        let originalMapParent = null; // Caches real DOM parent layout to swap cleanly without clones
+
+        // Interactive Drag-and-Drop Variables
+        let isDragging = false;
+        let dragStartCoords = { x: 0, y: 0 };
+        let dragSourceId = null;
+        let dragGhostElement = null;
+        let dragOffset = { x: 0, y: 0 };
+        let startScreenX = 0;
+        let startScreenY = 0;
+        const DRAG_THRESHOLD = 8; // Pointer movement in pixels before triggering drag mode
+
+        // Cross-tab synchronization channel setup
+        const syncChannel = new BroadcastChannel('united_school_bus_sync');
+
+        // Global Helper to resolve readable slot names cleanly
+        function getSlotLabel(d) {
+            if (!d) return "TBD";
+            if (d.defaultLabel && d.defaultLabel.toUpperCase() !== "TBD") {
+                return d.defaultLabel;
+            }
+            if (d.slotId) {
+                return d.slotId.replace('slot_', '').replace(/_/g, ' ').toUpperCase();
+            }
+            return "TBD";
+        }
+
+        // Defensive wrappers for requestFullscreen and exitFullscreen APIs
+        function safeRequestFullscreen(element) {
+            try {
+                const req = element.requestFullscreen || element.webkitRequestFullscreen || element.mozRequestFullScreen || element.msRequestFullscreen;
+                if (req) {
+                    const p = req.call(element);
+                    if (p && typeof p.catch === 'function') {
+                        p.catch(() => {});
+                    }
+                }
+            } catch (e) {
+                console.warn("Fullscreen request failed", e);
+            }
+        }
+
+        function safeExitFullscreen() {
+            try {
+                if (document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement) {
+                    const exit = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen || document.msExitFullscreen;
+                    if (exit) {
+                        const p = exit.call(document);
+                        if (p && typeof p.catch === 'function') {
+                            p.catch(() => {});
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn("Fullscreen exit failed", e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const mapWrapper = document.getElementById('mapWrapper');
+            if (mapWrapper) {
+                originalMapParent = mapWrapper.parentNode; // Cache original map container in DOM on launch
+            }
+
+            // Self-registering database from mapped SVG DOM components on the original Admin Map
+            document.querySelectorAll('#mapWrapper .slot-group').forEach(group => {
+                const id = group.getAttribute('data-slot-id');
+                const defaultLabel = group.getAttribute('data-default-label');
+                
+                busDatabase[id] = {
+                    slotId: id,
+                    defaultLabel: defaultLabel,
+                    busName: "",
+                    isParked: false,
+                    isBroken: false,
+                    parkedAt: ""
+                };
+            });
+
+            // Helper function to setup listeners for the single map
+            function setupMapInteractions(containerSelector) {
+                document.querySelectorAll(`${containerSelector} .slot-group`).forEach(group => {
+                    const id = group.getAttribute('data-slot-id');
+                    group.addEventListener('mousedown', (e) => handlePointerDown(e, id));
+                    group.addEventListener('touchstart', (e) => handlePointerDown(e, id), { passive: false });
+                });
+            }
+
+            setupMapInteractions('#mapWrapper');
+
+            // Load saved state from localStorage securely
+            try {
+                const savedDb = localStorage.getItem('schoolBusDatabase');
+                if (savedDb) {
+                    const parsed = JSON.parse(savedDb);
+                    for (const key in parsed) {
+                        if (busDatabase[key]) {
+                            busDatabase[key].busName = parsed[key].busName || "";
+                            busDatabase[key].isParked = parsed[key].isParked;
+                            busDatabase[key].isBroken = parsed[key].isBroken || false;
+                            busDatabase[key].parkedAt = parsed[key].parkedAt || "";
+                        }
+                    }
+                }
+            } catch (e) {
+                console.warn("Error reading database from storage", e);
+            }
+
+            // Load saved historical log database securely
+            try {
+                const savedHistory = localStorage.getItem('schoolBusReplacementHistory');
+                if (savedHistory) {
+                    replacementHistory = JSON.parse(savedHistory);
+                }
+            } catch (e) {
+                console.warn("Error reading history log from storage", e);
+            }
+
+            // Load saved login state from localStorage if available
+            const savedLogin = localStorage.getItem('schoolBusAdminLogged');
+            if (savedLogin === 'true') {
+                setLoginState(true, false);
+            }
+
+            // Input handlers with keydown listeners for standard compatibility
+            document.getElementById('passwordInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    loginAdmin();
+                }
+            });
+            document.getElementById('busSlot').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addBus();
+                }
+            });
+            document.getElementById('modalBusName').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    saveSlotBooking(false);
+                }
+            });
+            document.getElementById('modalPasswordInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    loginAdminFromModal();
+                }
+            });
+
+            // Dismiss modal upon backdrop overlay clicks
+            window.addEventListener('click', function(e) {
+                const modal = document.getElementById('bookingModal');
+                if (e.target === modal) {
+                    closeBookingModal();
+                }
+            });
+
+            // Synchronize starting labels and background coloring
+            for (const key in busDatabase) {
+                applyRenderChanges(key);
+            }
+
+            // Multi-browser compatibility for standard and webkit fullscreen events
+            ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(event => {
+                document.addEventListener(event, () => {
+                    const isFullscreenActive = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement;
+                    if (!isFullscreenActive) {
+                        const mapOverlay = document.getElementById('mapOverlay');
+                        if (mapOverlay && mapOverlay.classList.contains('show')) {
+                            exitMapMode();
+                        }
+                    }
+                });
+            });
+
+            // Listen for Esc keydown to exit standalone Map mode, bypassing LCD mode
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    if (isMapMode) {
+                        exitMapMode();
+                    }
+                }
+            });
+
+            document.getElementById('mapOverlay').addEventListener('click', function(e) {
+                if (e.target.closest('.slot-group')) return; 
+                safeRequestFullscreen(document.documentElement);
+            });
+
+            // Automatically check URL parameters for display boot configurations
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('mode') === 'lcd') {
+                enterLcdModeLocal();
+            } else if (urlParams.get('mode') === 'map') {
+                enterMapMode();
+            }
+
+            // Setup Terminal event listeners
+            const termInput = document.getElementById('terminalInput');
+            if (termInput) {
+                termInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        const commandLine = this.value.trim();
+                        this.value = '';
+                        if (commandLine) {
+                            processTerminalCommand(commandLine);
+                        }
+                    }
+                });
+            }
+        });
+
+        // Translate client screen position into local SVG-space coordinates
+        function getSVGCoords(evt, svgEl) {
+            const point = svgEl.createSVGPoint();
+            // Checking both changedTouches (crucial for touchend) and traditional touches arrays
+            if (evt.touches && evt.touches.length > 0) {
+                point.x = evt.touches[0].clientX;
+                point.y = evt.touches[0].clientY;
+            } else if (evt.changedTouches && evt.changedTouches.length > 0) {
+                point.x = evt.changedTouches[0].clientX;
+                point.y = evt.changedTouches[0].clientY;
+            } else {
+                point.x = evt.clientX;
+                point.y = evt.clientY;
+            }
+            const ctm = svgEl.getScreenCTM();
+            if (!ctm) return { x: point.x, y: point.y };
+            return point.matrixTransform(ctm.inverse());
+        }
+
+        // Match coordinates mathematically to the closest slot grid boundary
+        function findSlotAtCoords(svgCoords) {
+            for (const key in busDatabase) {
+                const group = document.querySelector(`#mapWrapper [data-slot-id="${key}"]`);
+                if (!group) continue;
+                const rect = group.querySelector('rect');
+                if (!rect) continue;
+                
+                const rx = parseFloat(rect.getAttribute('x'));
+                const ry = parseFloat(rect.getAttribute('y'));
+                const rw = parseFloat(rect.getAttribute('width'));
+                const rh = parseFloat(rect.getAttribute('height'));
+                
+                if (svgCoords.x >= rx && svgCoords.x <= rx + rw && svgCoords.y >= ry && svgCoords.y <= ry + rh) {
+                    return key;
+                }
+            }
+            return null;
+        }
+
+        function handlePointerDown(e, slotId) {
+            // Completely disable clicks and dragging on display screens (LCD / Map views)
+            if (isLcdMode || isMapMode) {
+                return; 
+            }
+
+            if (e.type === 'mousedown' && e.button !== 0) return; // Left clicks only
+
+            // Check if slot has an active parked bus before allowing drag initiation
+            const slotData = busDatabase[slotId];
+            if (!slotData || !slotData.isParked) {
+                // If vacant, act as a standard click trigger on mouse release
+                dragSourceId = slotId;
+                isDragging = false;
+                if (e.type === 'mousedown') {
+                    document.addEventListener('mouseup', handlePointerUp);
+                } else if (e.type === 'touchstart') {
+                    document.addEventListener('touchend', handlePointerUp);
+                }
+                return;
+            }
+
+            e.preventDefault();
+
+            const clientX = (e.type === 'touchstart') ? e.touches[0].clientX : e.clientX;
+            const clientY = (e.type === 'touchstart') ? e.touches[0].clientY : e.clientY;
+            
+            startScreenX = clientX;
+            startScreenY = clientY;
+            dragSourceId = slotId;
+            isDragging = false;
+
+            const svgEl = e.currentTarget.closest('svg');
+            const svgCoords = getSVGCoords(e, svgEl);
+            dragStartCoords = svgCoords;
+
+            const rect = e.currentTarget.querySelector('rect');
+            const rx = parseFloat(rect.getAttribute('x'));
+            const ry = parseFloat(rect.getAttribute('y'));
+
+            dragOffset = {
+                x: svgCoords.x - rx,
+                y: svgCoords.y - ry
+            };
+
+            if (e.type === 'mousedown') {
+                document.addEventListener('mousemove', handlePointerMove);
+                document.addEventListener('mouseup', handlePointerUp);
+            } else if (e.type === 'touchstart') {
+                document.addEventListener('touchmove', handlePointerMove, { passive: false });
+                document.addEventListener('touchend', handlePointerUp);
+            }
+        }
+
+        // Apply visual updates to the map elements
+        function applyRenderChanges(slotId) {
+            const data = busDatabase[slotId];
+            const group = document.querySelector(`#mapWrapper [data-slot-id="${slotId}"]`);
+            if (group) {
+                updateSlotElement(group, data);
+            }
+        }
+
+        // Individual slot renderer element modification
+        function updateSlotElement(groupElement, data) {
+            const rect = groupElement.querySelector('rect');
+            const text = groupElement.querySelector('text');
+            if (!rect || !text) return;
+
+            if (data.isParked) {
+                if (data.isBroken) {
+                    rect.setAttribute('class', 'parking-broken');
+                } else {
+                    rect.setAttribute('class', 'parking-emerald');
+                }
+                rect.style.fill = "";
+                rect.style.stroke = "";
+                
+                const targetText = data.busName || getSlotLabel(data);
+                const cleanText = targetText.substring(0, 10).toUpperCase();
+                
+                if (data.isBroken) {
+                    text.textContent = targetText.substring(0, 7).toUpperCase() + " 🔧";
+                } else {
+                    text.textContent = cleanText;
+                }
+                
+                text.removeAttribute('textLength'); 
+                text.classList.add('slot-text-active');
+            } else {
+                rect.setAttribute('class', 'parking-slot');
+                rect.style.fill = "";
+                rect.style.stroke = "";
+                
+                text.textContent = "TBD";
+                text.removeAttribute('textLength'); 
+                text.classList.remove('slot-text-active');
+            }
+        }
+
+        // Handle pointer moves during drag operations
+        function handlePointerMove(e) {
+            const clientX = (e.type === 'touchmove') ? e.touches[0].clientX : e.clientX;
+            const clientY = (e.type === 'touchmove') ? e.touches[0].clientY : e.clientY;
+
+            if (!isDragging) {
+                const dx = clientX - startScreenX;
+                const dy = clientY - startScreenY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance > DRAG_THRESHOLD) {
+                    isDragging = true;
+                    createDragGhost();
+                }
+            }
+
+            if (isDragging && dragGhostElement) {
+                e.preventDefault();
+                const svgEl = document.querySelector('#mapWrapper svg');
+                const svgCoords = getSVGCoords(e, svgEl);
+
+                const ghostX = svgCoords.x - dragOffset.x;
+                const ghostY = svgCoords.y - dragOffset.y;
+                dragGhostElement.setAttribute('transform', `translate(${ghostX}, ${ghostY})`);
+            }
+        }
+
+        // Handle pointer releases
+        function handlePointerUp(e) {
+            document.removeEventListener('mousemove', handlePointerMove);
+            document.removeEventListener('mouseup', handlePointerUp);
+            document.removeEventListener('touchmove', handlePointerMove);
+            document.removeEventListener('touchend', handlePointerUp);
+
+            const svgEl = document.querySelector('#mapWrapper svg');
+            
+            if (isDragging) {
+                const svgCoords = getSVGCoords(e, svgEl);
+                const targetSlotId = findSlotAtCoords(svgCoords);
+
+                if (targetSlotId && targetSlotId !== dragSourceId) {
+                    if (!isLoggedIn) {
+                        alert("🔒 ACCESS DENIED! PLEASE LOGIN TO THE ADMIN PANEL TO SHIFT PARKING BAYS.");
+                    } else {
+                        // Swap bus parameters
+                        const tempName = busDatabase[dragSourceId].busName;
+                        const tempIsParked = busDatabase[dragSourceId].isParked;
+                        const tempIsBroken = busDatabase[dragSourceId].isBroken;
+                        const tempParkedAt = busDatabase[dragSourceId].parkedAt;
+
+                        busDatabase[dragSourceId].busName = busDatabase[targetSlotId].busName;
+                        busDatabase[dragSourceId].isParked = busDatabase[targetSlotId].isParked;
+                        busDatabase[dragSourceId].isBroken = busDatabase[targetSlotId].isBroken;
+                        busDatabase[dragSourceId].parkedAt = busDatabase[targetSlotId].parkedAt;
+
+                        busDatabase[targetSlotId].busName = tempName;
+                        busDatabase[targetSlotId].isParked = tempIsParked;
+                        busDatabase[targetSlotId].isBroken = tempIsBroken;
+                        busDatabase[targetSlotId].parkedAt = tempParkedAt;
+                        saveDatabase();
+
+                        applyRenderChanges(dragSourceId);
+                        applyRenderChanges(targetSlotId);
+                        updateBusList();
+                    }
+                }
+
+                if (dragGhostElement && dragGhostElement.parentNode) {
+                    dragGhostElement.parentNode.removeChild(dragGhostElement);
+                }
+                dragGhostElement = null;
+            } else {
+                if (dragSourceId && !isLcdMode && !isMapMode) {
+                    openBookingModal(dragSourceId);
+                }
+            }
+
+            dragSourceId = null;
+            isDragging = false;
+        }
+
+        // Create temporary visible clone of active bay elements for visual drag feedback
+        function createDragGhost() {
+            const svgEl = document.querySelector('#mapWrapper svg');
+            const sourceGroup = document.querySelector(`#mapWrapper [data-slot-id="${dragSourceId}"]`);
+            if (!sourceGroup) return;
+
+            dragGhostElement = sourceGroup.cloneNode(true);
+            dragGhostElement.style.opacity = "0.75";
+            dragGhostElement.style.pointerEvents = "none";
+            dragGhostElement.removeAttribute('transform');
+
+            const rect = dragGhostElement.querySelector('rect');
+            const rx = parseFloat(rect.getAttribute('x'));
+            const ry = parseFloat(rect.getAttribute('y'));
+
+            const elements = dragGhostElement.querySelectorAll('rect, text');
+            elements.forEach(el => {
+                if (el.tagName === 'rect') {
+                    el.setAttribute('x', '0');
+                    el.setAttribute('y', '0');
+                } else if (el.tagName === 'text') {
+                    const originalX = parseFloat(el.getAttribute('x'));
+                    const originalY = parseFloat(el.getAttribute('y'));
+                    el.setAttribute('x', (originalX - rx).toString());
+                    el.setAttribute('y', (originalY - ry).toString());
+                    
+                    const transformAttr = el.getAttribute('transform');
+                    if (transformAttr && transformAttr.includes('rotate')) {
+                        const matches = transformAttr.match(/rotate\(([-\d.]+)[,\s]+([-\d.]+)[,\s]+([-\d.]+)\)/);
+                        if (matches) {
+                            const angle = matches[1];
+                            const cx = parseFloat(matches[2]) - rx;
+                            const cy = parseFloat(matches[3]) - ry;
+                            el.setAttribute('transform', `rotate(${angle} ${cx} ${cy})`);
+                        }
+                    }
+                }
+            });
+
+            const initialX = dragStartCoords.x - dragOffset.x;
+            const initialY = dragStartCoords.y - dragOffset.y;
+            dragGhostElement.setAttribute('transform', `translate(${initialX}, ${initialY})`);
+
+            svgEl.appendChild(dragGhostElement);
+        }
+
+        // Dynamic login state manager
+        function setLoginState(state, broadcast = true) {
+            if (isLoggedIn === state) return;
+            isLoggedIn = state;
+            
+            localStorage.setItem('schoolBusAdminLogged', state ? 'true' : 'false');
+            
+            if (isLoggedIn) {
+                document.getElementById('loginForm').classList.remove('show');
+                document.getElementById('adminContent').classList.add('show');
+            } else {
+                document.getElementById('adminContent').classList.remove('show');
+                document.getElementById('loginForm').classList.add('show');
+            }
+            
+            updateBusList();
+            syncOpenModalData();
+
+            if (broadcast && syncChannel) {
+                syncChannel.postMessage({ type: 'SYNC_LOGIN_STATE', loggedIn: state });
+            }
+        }
+
+        // Login process
+        function loginAdmin() {
+            const password = document.getElementById('passwordInput').value;
+            if (password === CORRECT_PASSWORD) {
+                setLoginState(true, true);
+                document.getElementById('passwordInput').value = '';
+            } else {
+                alert('❌ WRONG PASSWORD! Try again.');
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
+        // Modal login method for inline access
+        function loginAdminFromModal() {
+            const password = document.getElementById('modalPasswordInput').value;
+            if (password === CORRECT_PASSWORD) {
+                setLoginState(true, true);
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('modalPasswordInput').value = '';
+                
+                if (activeSelectedSlotId) {
+                    openBookingModal(activeSelectedSlotId);
+                }
+            } else {
+                alert('❌ WRONG PASSWORD! Try again.');
+                document.getElementById('modalPasswordInput').value = '';
+            }
+        }
+
+        // Logout logic
+        function logoutAdmin() {
+            setLoginState(false, true);
+        }
+
+        // Keep active dialog data fully up to date
+        function syncOpenModalData() {
+            if (!activeSelectedSlotId) return;
+            const slotData = busDatabase[activeSelectedSlotId];
+            const modalSlotTitle = document.getElementById('modalSlotTitle');
+            const modalSlotStatus = document.getElementById('modalSlotStatus');
+            const modalBusName = document.getElementById('modalBusName');
+            const modalAdminActions = document.getElementById('modalAdminActions');
+            const modalGuestMessage = document.getElementById('modalGuestMessage');
+            const btnReplaceBus = document.getElementById('btnReplaceBus');
+
+            if (modalSlotTitle) {
+                modalSlotTitle.innerText = slotData.isParked ? slotData.busName : getSlotLabel(slotData);
+            }
+            if (modalSlotStatus) {
+                if (slotData.isParked) {
+                    modalSlotStatus.innerText = slotData.isBroken ? "STATUS: BUS BROKEN (🔧 NEED REPLACEMENT/REPAIR)" : "STATUS: BUS CURRENTLY PARKED";
+                    modalSlotStatus.style.color = slotData.isBroken ? "#ffff00" : "#10B981";
+                } else {
+                    modalSlotStatus.innerText = "STATUS: BAY EMPTY";
+                    modalSlotStatus.style.color = "#10B981";
+                }
+            }
+            if (modalBusName) {
+                if (document.activeElement !== modalBusName) {
+                    modalBusName.value = slotData.isParked ? slotData.busName : "";
+                }
+                modalBusName.disabled = !isLoggedIn;
+            }
+
+            if (btnReplaceBus) {
+                if (slotData.isParked && slotData.isBroken) {
+                    btnReplaceBus.style.display = 'block';
+                } else {
+                    btnReplaceBus.style.display = 'none';
+                }
+            }
+
+            if (isLoggedIn) {
+                if (modalAdminActions) modalAdminActions.style.display = 'flex';
+                if (modalGuestMessage) modalGuestMessage.style.display = 'none';
+            } else {
+                if (modalAdminActions) modalAdminActions.style.display = 'none';
+                if (modalGuestMessage) modalGuestMessage.style.display = 'block';
+            }
+        }
+
+        // Modal triggers
+        function openBookingModal(slotId) {
+            if (isLcdMode || isMapMode) return; 
+            activeSelectedSlotId = slotId;
+            syncOpenModalData();
+
+            document.getElementById('bookingModal').classList.add('show');
+
+            if (isLoggedIn) {
+                setTimeout(() => {
+                    const el = document.getElementById('modalBusName');
+                    if (el) el.focus();
+                }, 100);
+            } else {
+                setTimeout(() => {
+                    const el = document.getElementById('modalPasswordInput');
+                    if (el) el.focus();
+                }, 100);
+            }
+        }
+
+        // Close modal
+        function closeBookingModal() {
+            document.getElementById('bookingModal').classList.remove('show');
+            activeSelectedSlotId = null;
+        }
+
+        // Save slot booking function
+        function saveSlotBooking(isBroken = false) {
+            if (!isLoggedIn || !activeSelectedSlotId) return;
+            
+            const busNameInput = document.getElementById('modalBusName').value.trim();
+
+            if (!busNameInput) {
+                alert("⚠ Please enter a Bus Label/Name");
+                return;
+            }
+
+            busDatabase[activeSelectedSlotId].busName = busNameInput;
+            busDatabase[activeSelectedSlotId].isParked = true;
+            busDatabase[activeSelectedSlotId].isBroken = isBroken;
+            busDatabase[activeSelectedSlotId].parkedAt = new Date().toLocaleString();
+            saveDatabase();
+
+            applyRenderChanges(activeSelectedSlotId);
+            updateBusList();
+            closeBookingModal();
+        }
+
+        // Replace broken bus function
+        function replaceBrokenBus() {
+            if (!isLoggedIn || !activeSelectedSlotId) return;
+
+            const busNameInput = document.getElementById('modalBusName').value.trim();
+
+            if (!busNameInput) {
+                alert("⚠ Please enter a new Bus Label/Name to replace the broken bus.");
+                return;
+            }
+
+            const slotData = busDatabase[activeSelectedSlotId];
+            const oldBusName = slotData.busName || getSlotLabel(slotData);
+            const newBusName = busNameInput;
+            const slotLabel = getSlotLabel(slotData);
+            const timestamp = new Date().toLocaleString();
+
+            replacementHistory.push({
+                timestamp: timestamp,
+                oldBusName: oldBusName.toUpperCase(),
+                newBusName: newBusName.toUpperCase(),
+                slotLabel: slotLabel.toUpperCase(),
+                slotId: activeSelectedSlotId
+            });
+
+            busDatabase[activeSelectedSlotId].busName = busNameInput;
+            busDatabase[activeSelectedSlotId].isParked = true;
+            busDatabase[activeSelectedSlotId].isBroken = false;
+            busDatabase[activeSelectedSlotId].parkedAt = timestamp;
+            saveDatabase();
+
+            applyRenderChanges(activeSelectedSlotId);
+            updateBusList();
+            closeBookingModal();
+        }
+
+        // Clear slot booking function
+        function clearSlotBooking() {
+            if (!isLoggedIn || !activeSelectedSlotId) return;
+
+            busDatabase[activeSelectedSlotId].busName = "";
+            busDatabase[activeSelectedSlotId].isParked = false;
+            busDatabase[activeSelectedSlotId].isBroken = false;
+            busDatabase[activeSelectedSlotId].parkedAt = "";
+            saveDatabase();
+
+            applyRenderChanges(activeSelectedSlotId);
+            updateBusList();
+            closeBookingModal();
+        }
+
+        // Add bus manually
+        function addBus() {
+            if (!isLoggedIn) {
+                alert('⛔ NOT LOGGED IN');
+                return;
+            }
+
+            const inputVal = document.getElementById('busSlot').value.trim().toUpperCase();
+            if (inputVal === '') {
+                alert('⚠ Enter slot identifier');
+                return;
+            }
+
+            let foundKey = null;
+            for (const key in busDatabase) {
+                if (busDatabase[key].defaultLabel.toUpperCase() === inputVal || key.toUpperCase() === inputVal) {
+                    foundKey = key;
+                    break;
+                }
+            }
+
+            if (!foundKey) {
+                alert('⚠ Slot not matched on local map registry.');
+                return;
+            }
+
+            busDatabase[foundKey].busName = inputVal;
+            busDatabase[foundKey].isParked = true;
+            busDatabase[foundKey].isBroken = false;
+            busDatabase[foundKey].parkedAt = new Date().toLocaleString();
+            saveDatabase();
+
+            applyRenderChanges(foundKey);
+            updateBusList();
+            document.getElementById('busSlot').value = '';
+        }
+
+        // Update active bus roster
+        function updateBusList() {
+            const busList = document.getElementById('busList');
+            if (!busList) return;
+            const parkedKeys = Object.keys(busDatabase).filter(key => busDatabase[key].isParked);
+
+            if (parkedKeys.length === 0) {
+                busList.innerHTML = '<div style="color: #888888; text-align: center; padding: 20px;">No buses parked</div>';
+                return;
+            }
+
+            busList.innerHTML = parkedKeys.map(key => {
+                const data = busDatabase[key];
+                const statusLabel = data.isBroken ? '<span style="color: #ffff00; font-weight: bold;">🔧 BROKEN</span>' : '<span style="color: #10B981; font-weight: bold;">✔ ACTIVE</span>';
+                const statusBorder = data.isBroken ? '#ffff00' : '#10B981';
+                const statusBg = data.isBroken ? 'rgba(255, 255, 0, 0.04)' : 'rgba(16, 185, 129, 0.04)';
+                const glowColor = data.isBroken ? 'rgba(255, 255, 0, 0.15)' : 'rgba(16, 185, 129, 0.15)';
+                return `
+                    <div class="bus-item active" style="border-left: 4px solid ${statusBorder}; background: ${statusBg}; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3), 0 0 10px ${glowColor}; border-top: 1px solid rgba(255, 255, 255, 0.04); border-right: 1px solid rgba(255, 255, 255, 0.04); border-bottom: 1px solid rgba(255, 255, 255, 0.04); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);">
+                        <div style="font-weight: bold; color: ${statusBorder}; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">📍 BAY: ${getSlotLabel(data)} (${statusLabel})</div>
+                        <div style="color: #e2e8f0;">🚌 NAME: ${(data.busName || "").toUpperCase()}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // Reset all bays
+        function clearAllBuses() {
+            if (!isLoggedIn) return;
+            if (confirm("🧹 Reset all bus positions, database logs, and clear all occupied parking bays?")) {
+                for (const key in busDatabase) {
+                    busDatabase[key].busName = "";
+                    busDatabase[key].isParked = false;
+                    busDatabase[key].isBroken = false;
+                    busDatabase[key].parkedAt = "";
+                    applyRenderChanges(key);
+                }
+                replacementHistory = [];
+                saveDatabase();
+                updateBusList();
+            }
+        }
+
+        // Helper to persist state to localStorage and broadcast change to other open tabs
+        function saveDatabase() {
+            localStorage.setItem('schoolBusDatabase', JSON.stringify(busDatabase));
+            localStorage.setItem('schoolBusReplacementHistory', JSON.stringify(replacementHistory));
+            if (syncChannel) {
+                syncChannel.postMessage({ 
+                    type: 'UPDATE_DATABASE', 
+                    data: busDatabase, 
+                    history: replacementHistory 
+                });
+            }
+        }
+
+        // Listen to active updates broadcasted by other open browser windows/tabs
+        syncChannel.onmessage = function(e) {
+            if (e.data && e.data.type === 'UPDATE_DATABASE') {
+                const parsed = e.data.data;
+                for (const key in busDatabase) {
+                    if (parsed[key]) {
+                        busDatabase[key].busName = parsed[key].busName || "";
+                        busDatabase[key].isParked = parsed[key].isParked;
+                        busDatabase[key].isBroken = parsed[key].isBroken || false;
+                        busDatabase[key].parkedAt = parsed[key].parkedAt || "";
+                        applyRenderChanges(key);
+                    }
+                }
+                if (e.data.history) {
+                    replacementHistory = e.data.history;
+                }
+                updateBusList();
+                syncOpenModalData();
+            } else if (e.data && e.data.type === 'SYNC_LOGIN_STATE') {
+                setLoginState(e.data.loggedIn, false);
+            }
+        };
+
+        // Fallback listener for storage changes
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'schoolBusDatabase') {
+                try {
+                    const parsed = e.newValue ? JSON.parse(e.newValue) : null;
+                    for (const key in busDatabase) {
+                        busDatabase[key].busName = (parsed && parsed[key]) ? (parsed[key].busName || "") : "";
+                        busDatabase[key].isParked = (parsed && parsed[key]) ? parsed[key].isParked : false;
+                        busDatabase[key].isBroken = (parsed && parsed[key]) ? parsed[key].isBroken : false;
+                        busDatabase[key].parkedAt = (parsed && parsed[key]) ? parsed[key].parkedAt : "";
+                        applyRenderChanges(key);
+                    }
+                } catch (err) {
+                    console.warn(err);
+                }
+                updateBusList();
+                syncOpenModalData();
+            }
+            if (e.key === 'schoolBusReplacementHistory') {
+                try {
+                    replacementHistory = e.newValue ? JSON.parse(e.newValue) : [];
+                } catch (err) {
+                    console.warn(err);
+                }
+            }
+            if (e.key === 'schoolBusAdminLogged') {
+                const loggedVal = e.newValue === 'true';
+                if (isLoggedIn !== loggedVal) {
+                    setLoginState(loggedVal, false);
+                }
+            }
+        });
+
+        // Open LCD display in a new browser tab/window
+        function openLcdModeTab() {
+            const url = new URL(window.location.href);
+            url.searchParams.set('mode', 'lcd');
+            window.open(url.toString(), '_blank');
+        }
+
+        // Enter Standalone Map-Only Mode
+        function enterMapMode() {
+            isMapMode = true;
+
+            const mapOnlyContainer = document.getElementById('mapOnlyContainer');
+            const mapWrapper = document.getElementById('mapWrapper');
+            if (mapOnlyContainer && mapWrapper) {
+                mapOnlyContainer.appendChild(mapWrapper);
+            }
+
+            for (const key in busDatabase) {
+                applyRenderChanges(key);
+            }
+
+            const overlay = document.getElementById('mapOverlay');
+            if (overlay) overlay.classList.add('show');
+            
+            safeRequestFullscreen(document.documentElement);
+        }
+
+        // Exit Standalone Map-Only Mode
+        function exitMapMode() {
+            isMapMode = false;
+
+            const overlay = document.getElementById('mapOverlay');
+            if (overlay) overlay.classList.remove('show');
+            
+            const mapWrapper = document.getElementById('mapWrapper');
+            if (originalMapParent && mapWrapper) {
+                const legendContainer = document.getElementById('legendContainer');
+                if (legendContainer) {
+                    originalMapParent.insertBefore(mapWrapper, legendContainer);
+                } else {
+                    originalMapParent.appendChild(mapWrapper);
+                }
+            }
+
+            safeExitFullscreen();
+
+            // Remove URL parameter dynamically
+            const url = new URL(window.location.href);
+            url.searchParams.delete('mode');
+            window.history.replaceState({}, '', url.toString());
+
+            for (const key in busDatabase) {
+                applyRenderChanges(key);
+            }
+        }
+
+        // Enter LCD Mode locally in current tab
+        function enterLcdModeLocal() {
+            isLcdMode = true;
+
+            const lcdMapContainer = document.getElementById('lcdMapContainer');
+            const mapWrapper = document.getElementById('mapWrapper');
+            if (lcdMapContainer && mapWrapper) {
+                lcdMapContainer.appendChild(mapWrapper);
+            }
+
+            for (const key in busDatabase) {
+                applyRenderChanges(key);
+            }
+
+            const lcdOverlay = document.getElementById('lcdOverlay');
+            if (lcdOverlay) {
+                lcdOverlay.classList.add('show');
+            }
+
+            if (lcdTimer) clearInterval(lcdTimer);
+            updateLcdClock();
+            lcdTimer = setInterval(updateLcdClock, 1000);
+        }
+
+        // Exit LCD Display Mode
+        function exitLcdMode() {
+            isLcdMode = false;
+
+            if (lcdTimer) {
+                clearInterval(lcdTimer);
+                lcdTimer = null;
+            }
+
+            const lcdOverlay = document.getElementById('lcdOverlay');
+            if (lcdOverlay) {
+                lcdOverlay.classList.remove('show');
+            }
+
+            const mapWrapper = document.getElementById('mapWrapper');
+            if (originalMapParent && mapWrapper) {
+                const legendContainer = document.getElementById('legendContainer');
+                if (legendContainer) {
+                    originalMapParent.insertBefore(mapWrapper, legendContainer);
+                } else {
+                    originalMapParent.appendChild(mapWrapper);
+                }
+            }
+
+            safeExitFullscreen();
+
+            // Remove URL parameter dynamically
+            const url = new URL(window.location.href);
+            url.searchParams.delete('mode');
+            window.history.replaceState({}, '', url.toString());
+
+            for (const key in busDatabase) {
+                applyRenderChanges(key);
+            }
+        }
+
+        // Update LCD digital clock display
+        function updateLcdClock() {
+            const clockEl = document.getElementById('lcdClock');
+            if (clockEl) {
+                const now = new Date();
+                clockEl.innerText = now.toLocaleTimeString();
+            }
+        }
+
+        /* TERMINAL LOGIC AND INPUT PROCESSOR */
+        function clearTerminal() {
+            const terminalOutput = document.getElementById('terminalOutput');
+            if (!terminalOutput) return;
+            terminalOutput.innerHTML = '';
+            if (!isTerminalAuthorized) {
+                terminalOutput.innerHTML = 'United School Bus Management System [Version 1.0.0]\nEnter password to access the system console:\n';
+            }
+        }
+
+        function processTerminalCommand(cmdLine) {
+            const terminalOutput = document.getElementById('terminalOutput');
+            const terminalPrompt = document.getElementById('terminalPrompt');
+            const terminalInput = document.getElementById('terminalInput');
+            if (!terminalOutput || !terminalPrompt || !terminalInput) return;
+            
+            if (!isTerminalAuthorized) {
+                terminalOutput.innerHTML += `<span class="prompt">Password:</span> <span style="color: #ffffff;">${"*".repeat(cmdLine.length)}</span><br>`;
+                
+                if (cmdLine === "2356") { // Terminal Password set to 2356
+                    isTerminalAuthorized = true;
+                    terminalOutput.innerHTML += `<span style="color: #10B981;">Access Granted. Welcome to United School Bus Management.</span><br>Type 'help' for a list of system command options.<br><br>`;
+                    terminalPrompt.innerHTML = "USBMS&gt;";
+                    terminalInput.type = "text";
+                    terminalInput.placeholder = "Type a command...";
+                } else {
+                    terminalOutput.innerHTML += `<span style="color: #ef4444;">Access Denied. Incorrect password.</span><br>Enter password to access the system console:<br>`;
+                }
+                
+                const termBody = document.querySelector('.terminal-body');
+                if (termBody) {
+                    termBody.scrollTop = termBody.scrollHeight;
+                }
+                return;
+            }
+            
+            terminalOutput.innerHTML += `<span class="prompt">USBMS&gt;</span> <span style="color: #ffffff;">${escapeHtml(cmdLine)}</span><br>`;
+            
+            const rawTokens = cmdLine.trim().split(/\s+/);
+            const command = rawTokens[0] ? rawTokens[0].toLowerCase() : '';
+            const args = rawTokens;
+            
+            let response = '';
+            
+            switch(command) {
+                case 'help': {
+                    response = '<span style="color: #10B981;">Available Commands:<br>' +
+                            '  help           - Show this help log information<br>' +
+                            '  system         - Display diagnostic system specs and state<br>' +
+                            '  stats          - Display total empty, occupied, and broken bays<br>' +
+                            '  list           - List details of all currently parked buses<br>' +
+                            '  find [name]    - Search the system database for a specific bus location<br>' +
+                            '  clearallslots  - Clear and reset all parking slots and system replacement logs<br>' +
+                            '  busdata [name] - View detailed registry log & replacement history by Bus Name or Slot ID, or "busdata every"<br>' +
+                            '  cls / clear    - Clear output logs on console window</span><br>';
+                    break;
+                }
+                case 'system': {
+                    response = '<span style="color: #10B981;">SYSTEM SPECIFICATIONS & LOGS:<br>' +
+                            '  CORE:      ONLINE<br>' +
+                            '  SECURITY:  ENCRYPTED (AES-256)<br>' +
+                            '  SYNC:      REAL-TIME ACTIVE<br>' +
+                            '  STORAGE:   LOCALPERSISTENCE INTERFACE ENABLED</span><br>';
+                    break;
+                }
+                case 'stats': {
+                    const slots = Object.keys(busDatabase);
+                    const occupiedCount = slots.filter(k => busDatabase[k].isParked && !busDatabase[k].isBroken).length;
+                    const brokenCount = slots.filter(k => busDatabase[k].isParked && busDatabase[k].isBroken).length;
+                    const vacantCount = slots.length - (occupiedCount + brokenCount);
+                    response = '<span style="color: #10B981; font-weight: bold;">' +
+                            'PARKING SYSTEM STATISTICS:<br>' +
+                            `  Vacant (TBD) Slots:   ${vacantCount}<br>` +
+                            `  Occupied Slots:       ${occupiedCount}<br>` +
+                            `  Broken Bus Slots:     ${brokenCount}</span><br>`;
+                    break;
+                }
+                case 'clearallslots': {
+                    for (const key in busDatabase) {
+                        busDatabase[key].busName = "";
+                        busDatabase[key].isParked = false;
+                        busDatabase[key].isBroken = false;
+                        busDatabase[key].parkedAt = "";
+                        applyRenderChanges(key);
+                    }
+                    replacementHistory = [];
+                    saveDatabase();
+                    updateBusList();
+                    response = '<span style="color: #10B981; font-weight: bold;">' +
+                            'SUCCESS: All parking slots and replacement history logs have been cleared and reset.</span><br>';
+                    break;
+                }
+                case 'find': { 
+                    if (args.length < 2) {
+                        response = '<span style="color: #10B981; font-weight: bold;">Usage: find [bus_name]</span><br>';
+                        break;
+                    }
+                    const searchName = args.slice(1).join(' ').trim().toUpperCase();
+                    let matches = [];
+                    for (const key in busDatabase) {
+                        if (busDatabase[key].isParked && busDatabase[key].busName.toUpperCase().includes(searchName)) {
+                            const label = getSlotLabel(busDatabase[key]);
+                            const statusStr = busDatabase[key].isBroken ? ' (BROKEN 🔧)' : '';
+                            matches.push(`Slot ${label} - Name: ${busDatabase[key].busName}${statusStr}`);
+                        }
+                    }
+                    if (matches.length === 0) {
+                        response = `<span style="color: #10B981;">No active buses match "${escapeHtml(searchName)}".</span><br>`;
+                    } else {
+                        response = `<span style="color: #10B981; font-weight: bold;">Matches found:<br>` +
+                                `  ${matches.join('<br>  ')}</span><br>`;
+                    }
+                    break;
+                }
+                case 'busdata': { 
+                    if (args.length < 2) {
+                        response = '<span style="color: #10B981; font-weight: bold;">' +
+                                'Usage: busdata [bus_name_or_slot] or busdata every</span><br>';
+                        break;
+                    }
+                    const targetInput = args.slice(1).join(' ').trim().toUpperCase();
+                    
+                    if (targetInput === 'EVERY') {
+                        response = '<span style="color: #10B981; font-weight: bold;">ALL BAYS SYSTEM LOGS:</span><br>';
+                        for (const key in busDatabase) {
+                            const data = busDatabase[key];
+                            const label = getSlotLabel(data);
+                            if (data.isParked) {
+                                const statusStr = data.isBroken ? "BROKEN 🔧" : "PARKED ✔";
+                                response += `<span style="color: #10B981;">  Bay ${label.padEnd(8)} | Name: ${(data.busName || "").toUpperCase().padEnd(10)} | Status: ${statusStr.padEnd(9)} | Parked At: ${data.parkedAt || "N/A"}</span><br>`;
+                            } else {
+                                response += `<span style="color: #10B981;">  Bay ${label.padEnd(8)} | Name: EMPTY      | Status: VACANT    | Parked At: N/A</span><br>`;
+                            }
+                        }
+                        break;
+                    }
+
+                    let foundKey = null;
+
+                    for (const key in busDatabase) {
+                        const slot = busDatabase[key];
+                        if (slot.isParked && (slot.busName || "").toUpperCase() === targetInput) {
+                            foundKey = key;
+                            break;
+                        }
+                    }
+
+                    if (!foundKey) {
+                        for (const key in busDatabase) {
+                            const slot = busDatabase[key];
+                            const label = slot.defaultLabel ? slot.defaultLabel.toUpperCase() : "";
+                            const id = slot.slotId ? slot.slotId.toUpperCase() : "";
+                            const cleanId = id.replace("SLOT_", "");
+                            
+                            if (label === targetInput || id === targetInput || key.toUpperCase() === targetInput || cleanId === targetInput) {
+                                foundKey = key;
+                                break;
+                            }
+                        }
+                    }
+
+                    let registryStatus = '';
+                    if (foundKey) {
+                        const data = busDatabase[foundKey];
+                        if (!data.isParked) {
+                            registryStatus = `<span style="color: #10B981; font-weight: bold;">` +
+                                    `BAY ${getSlotLabel(data)}: VACANT (TBD)<br>No bus currently parked.</span><br>`;
+                        } else {
+                            const statusStr = data.isBroken ? "BROKEN (🔧)" : "ACTIVE";
+                            registryStatus = `<span style="color: #10B981; font-weight: bold;">` +
+                                    `BAY ${getSlotLabel(data)} REGISTRY:<br>` +
+                                    `  Bus Name:  ${(data.busName || "").toUpperCase()}<br>` +
+                                    `  Status:    ${statusStr}<br>` +
+                                    `  Parked At: ${data.parkedAt || "N/A"}</span><br>`;
+                        }
+                    } else {
+                        registryStatus = `<span style="color: #a3a3a3;">` +
+                                `No active bay or parked bus matches '${escapeHtml(targetInput)}'.</span><br>`;
+                    }
+
+                    const matchedHistory = replacementHistory.filter(h => 
+                        h.oldBusName === targetInput || 
+                        h.newBusName === targetInput || 
+                        h.slotLabel === targetInput
+                    );
+
+                    let historyStatus = '';
+                    if (matchedHistory.length > 0) {
+                        historyStatus = `<span style="color: #facc15; font-weight: bold;"><br>REPLACEMENT & REPAIR HISTORY LOGS:</span><br>`;
+                        matchedHistory.forEach(h => {
+                            if (h.oldBusName === targetInput) {
+                                historyStatus += `<span style="color: #ef4444;">  [${h.timestamp}] Bus ${h.oldBusName} was declared BROKEN and was replaced by Bus ${h.newBusName} in Slot ${h.slotLabel}.</span><br>`;
+                            } else if (h.newBusName === targetInput) {
+                                historyStatus += `<span style="color: #10B981;">  [${h.timestamp}] Bus ${h.newBusName} was deployed in Slot ${h.slotLabel} to replace broken Bus ${h.oldBusName}.</span><br>`;
+                            } else {
+                                historyStatus += `<span style="color: #06b6d4;">  [${h.timestamp}] Slot ${h.slotLabel}: Broken Bus ${h.oldBusName} was replaced by Bus ${h.newBusName}.</span><br>`;
+                            }
+                        });
+                    }
+
+                    response = registryStatus;
+                    if (historyStatus) {
+                        response += historyStatus;
+                    } else if (!foundKey) {
+                        response = `<span style="color: #ef4444; font-weight: bold;">` +
+                                `ERROR: Bus/Slot '${escapeHtml(targetInput)}' not found in registry database or history logs.</span><br>`;
+                    }
+                    break;
+                }
+                case 'list': {
+                    const parked = Object.keys(busDatabase).filter(k => busDatabase[k].isParked);
+                    if (parked.length === 0) {
+                        response = '<span style="color: #10B981;">No buses are currently parked in any system bays.</span><br>';
+                    } else {
+                        response = '<span style="color: #10B981;">ACTIVE VEHICLE REGISTRIES:<br>';
+                        parked.forEach(k => {
+                            const rawLabel = getSlotLabel(busDatabase[k]);
+                            const brokenStatus = busDatabase[k].isBroken ? ' [BROKEN]' : '';
+                            response += `  Bay: ${rawLabel.padEnd(8)} | Label: ${(busDatabase[k].busName || "").toUpperCase()}${brokenStatus}<br>`;
+                        });
+                        response += '</span>';
+                    }
+                    break;
+                }
+                case 'cls':
+                case 'clear': {
+                    clearTerminal();
+                    return;
+                }
+                default:
+                    response = `<span style="color: #ef4444;">'${escapeHtml(command)}' is not recognized as an internal or external command.<br>Type 'help' for a list of valid commands.</span><br>`;
+            }
+            
+            terminalOutput.innerHTML += response + '<br>';
+            
+            const termBody = document.querySelector('.terminal-body');
+            if (termBody) {
+                termBody.scrollTop = termBody.scrollHeight;
+            }
+        }
+
+        function escapeHtml(text) {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/\n/g, "<br>")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
